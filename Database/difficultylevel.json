@@ -1,0 +1,17 @@
+[
+    {
+        "id": 0,
+        "level": "beginner",
+        "reps": 12
+    },
+    {
+        "id": 0,
+        "level": "intermediate",
+        "reps":  15  
+    },
+    {
+        "id": 0,
+        "level": "Advance"
+    }
+
+]

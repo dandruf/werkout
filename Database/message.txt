@@ -1,0 +1,249 @@
+{
+  "title": "User",
+  "required": [
+    "_id",
+    "_partition",
+    "user_id",
+    "name"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "objectId"
+    },
+    "_partition": {
+      "bsonType": "string"
+    },
+    "user_id": {
+      "bsonType": "string"
+    },
+    "name": {
+      "bsonType": "string"
+    },
+    "image": {
+      "bsonType": "string"
+    }
+  }
+}
+4
+Define a Schema for Task Documents
+
+The core function of a task tracker is to store data about a user’s tasks. In this app, we store the task data as documents in the tracker.tasks collection. Each task has a descriptive name and can have one of three statuses: Open, In Progress, or Closed. Additionally, each task may specify a specific user as its assignee. We’ll use another schema to define the shape and contents of documents in the tasks collection.
+
+In the rules editor, select the tracker.tasks collection and then click the Schema tab. Paste in the following schema and then click Save.
+
+SYNCED MOBILE APPS
+If you are building a mobile application, set the bsonType of the assignee field to objectId instead of string.
+copycopied
+{
+  "title": "Task",
+  "required": [
+    "_id",
+    "_partition",
+    "name",
+    "status"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "objectId"
+    },
+    "_partition": {
+      "bsonType": "string"
+    },
+    "assignee": {
+      "bsonType": "string"
+    },
+    "name": {
+      "bsonType": "string"
+    },
+    "status": {
+      "bsonType": "string"
+    }
+  }
+}
+5
+Define a Relationship Between Tasks and Users
+
+The assignee field of each task contains the user id string of the user that the task is assigned to. We can use this information to define a relationship between documents in the tasks and users collections. This will allow us to write GraphQL operations that can read and modify related documents as if they were a single document.
+
+To define the relationship, ensure you’re editing rules for the tracker.tasks collection and then click the Relationships tab. Click Add a Relationship and define a relationship that points from the assignee property to the user_id property in the tracker.tasks collection.
+
+SYNCED MOBILE APPS
+If you are building a mobile application, define the relationship to point to _id instead of user_id.
+../../_images/task-tracker-web-add-relationship.png
+C. Configure User Authentication
+
+Every request sent to Realm must come from an authenticated user, so we need to have a way for users to create accounts and log in. For this app, we’ll use email/password authentication. Authenticating users has the additional benefit of giving each user a persistent identity that we can associate with their tasks in order to easily find and secure them.
+
+1
+Navigate to the Email/Password Authentication Configuration Screen
+
+Click Users in the lefthand navigation and then select the Providers tab. Find Email/Password in the list of authentication providers and click its Edit button.
+
+../../_images/task-tracker-web-auth-providers.png
+2
+Enable the Provider
+
+Set the Provider Enabled toggle to on.
+
+../../_images/task-tracker-web-auth-enable.png
+3
+Configure User Confirmation
+
+For the User Confirmation Method, select Automatically confirm users. As the name suggests, this method automatically confirms new users when they register with a valid email and password.
+
+../../_images/task-tracker-web-auth-confirm.png
+EXERCISE: SUPPORT EMAIL CONFIRMATION
+Once you’ve finished building the application, consider modifying the app to require new users to confirm their accounts before they log in. To learn how, check out the docs for user confirmation.
+4
+Configure Password Resets
+
+For the Password Reset Method, select Run a password reset function. This method enables an SDK method that calls a Realm Function to handle the password reset. In this tutorial we won’t worry about password resets, so you can use the default password reset function, resetFunc, which denies all password reset requests.
+
+../../_images/task-tracker-web-auth-reset.png
+EXERCISE: SUPPORT PASSWORD RESETS
+Once you’ve finished building the application, consider modifying the app to allow users to reset their passwords. To learn how, check out the docs for password resets.
+D. Define Data Access Permissions
+
+GRAPHQL CLIENT ONLY
+If you plan to use this backend with one or more of the mobile client tutorials (iOS, Android, or React Native), you can skip this section because mobile apps use Realm Sync. Realm Sync has its own permissions model, so the permissions set here will not apply.
+Once you’ve defined schemas for User and Task, Realm automatically generates GraphQL types and resolvers that allow you to access data through the GraphQL API. By default, however, all GraphQL queries from a client application will fail.
+
+To allow users to read and write data, you must first define data access rules that determine whether a user has read or write permissions for a given document.
+
+1
+Define Roles & Permissions for Tasks
+
+For any given task, a user may be the task’s assignee. We want users to be able to create, modify, and delete tasks for themselves. They should be able to see other users’ tasks but shouldn’t be allowed to create new tasks for other users or delete tasks that don’t belong to them.
+
+To accomplish this, we’ll define two roles for the tasks collection. The isAssignee role applies to tasks where the user’s id is listed in the document’s asignee field and the default role applies to all other tasks.
+
+In the rules editor, select the tracker.tasks collection and then click the Permissions tab. Define two roles for the collection that match the following specifications:
+
+Role Name	Permissions	Apply When
+isAssignee	
+Insert Documents: true
+Delete Documents: true
+Read All Fields: true
+Write All Fields: true
+copycopied
+{
+  "assignee": "%%user.id"
+}
+default	
+Insert Documents: false
+Delete Documents: false
+Read All Fields: true
+Write All Fields: false
+copycopied
+{}
+../../_images/task-tracker-web-roles-tasks.png
+click to enlarge
+2
+Define Roles & Permissions for Users
+
+In general, you should give special consideration to what user data is necessary for your application and who can read and modify that data. For this tutorial, we’re not storing any sensitive data so we can allow all users to read any user document. However, we want to prevent users from editing data directly (especially if it’s not their data), so we won’t allow write operations on any document. Instead, we can use server-side system functions to handle updates to user documents.
+
+To accomplish this, we’ll define a single role for the users collection that applies to all requests.
+
+In the rules editor, select the tracker.users collection and then click the Permissions tab. Define a role for the collection that matches the following specification:
+
+Role Name	Permissions	Apply When
+default	
+Insert Documents: false
+Delete Documents: false
+Read All Fields: true
+Write All Fields: false
+copycopied
+{}
+../../_images/task-tracker-web-roles-users.png
+click to enlarge
+E. Enable Sync
+
+MOBILE CLIENTS ONLY
+If you plan to use this backend exclusively with the web client using GraphQL and not with one or more of the mobile client tutorials (iOS, Android, or React Native), you can skip this section. The web client uses GraphQL to work with data, not Realm Sync.
+To allow the seamless transfer of data across devices, we enable Realm Sync.
+
+1
+Navigate to the Realm Sync Panel
+
+You can enable Realm Sync rules from the Sync panel in the Realm UI. To get to the Sync panel, click Sync beneath Data Access & Security in the left-hand navigation.
+
+2
+Configure Sync
+
+Follow the instructions in the Realm UI to configure sync for your cluster.
+
+Select a Cluster to Sync: Realm Sync applies to the entire cluster. Specify which cluster you want to sync in the dropdown.
+Choose a Partition Key: Enter _partition for the partition key. The partition key specifies which realm each object belongs to.
+Define Permissions: Select “No template” and leave the default, empty Read and Write rules. In a future tutorial, we will explore more complex permissions patterns.
+The Realm Sync configuration for the tutorial in the Realm UI
+click to enlarge
+3
+Save the Configuration and Enable Sync
+
+Click Enable Sync to enable sync.
+
+F. Define an Authentication Trigger
+
+We want each user to have a corresponding document in the users collection that contains their information. We could create these documents manually for every user, but that approach is prone to errors and adds complexity to your client applications. Instead, we can use a trigger to automatically add a document for each user when they register their acount.
+
+1
+Create a New Trigger
+
+To define a new trigger, click Triggers in the lefthand navigation and then click Add a Trigger.
+
+../../_images/task-tracker-web-add-trigger.png
+2
+Define the Trigger Type
+
+Set the Trigger Type to Authentication and give the trigger a descriptive name. We suggest onNewUser, but you can use any name you like.
+
+../../_images/task-tracker-web-configure-trigger-type.png
+3
+Configure the Trigger Action
+
+We want the trigger to fire when users register a new account, so set the Action Type to Create. We’re using email/password authentication for this app, so specify Email/Password as the only Provider.
+
+../../_images/task-tracker-web-configure-trigger-event.png
+4
+Define the Trigger Function
+
+When a new user registers their account, we want to add a document to the tracker.users collection that describes the user. To do that, we’ll use a function that can access the user’s info and inserts a new document for them.
+
+Create a new function named createNewUserDocument and paste in the following code:
+
+copycopied
+exports = async function createNewUserDocument({ user }) {
+  const cluster = context.services.get("mongodb-atlas");
+  const users = cluster.db("tracker").collection("users");
+  return await users.insertOne({
+    _partition: "My Project",
+    user_id: user.id,
+    name: user.data.email,
+  });
+};
+MONGODB AUTOMATICALLY ADDS DOCUMENT IDS
+MongoDB automatically adds a new ObjectID to the _id field of documents on insert if the field didn’t already exist.
+G. Deploy Your App
+
+At this point your Realm App is fully configured and almost ready to accept requests from client applications. All that’s left to do is to deploy the fully configured app.
+
+Click Deploy in the lefthand navigation and find the current draft at the top of the deployment history table. Click the Review & Deploy Changes button and review the diff to make sure that everything looks correct. When you’re ready to go live, click Deploy.
+
+../../_images/task-tracker-web-deploy-history.png
+What’s Next?
+
+You just built a functional task tracker application backend with MongoDB Realm. Great job!
+
+Now that you have a working Realm application, you can follow one of our client application tutorials to connect to your Realm app and manage tasks from a mobile or web application.
+
+iOS (Swift)
+Android (Kotlin)
+React Native (JavaScript)
+Web/GraphQL (TypeScript)
+←  	Create a Task Tracker App	iOS Swift Tutorial	 →
+© MongoDB, Inc 2008-present. MongoDB, Mongo, and the leaf logo are registered trademarks of MongoDB, Inc.
+
+Was this page helpful?
+YES
+NO
