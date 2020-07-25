@@ -5,13 +5,14 @@
         "reps": 12
     },
     {
-        "id": 0,
+        "id": 1,
         "level": "intermediate",
-        "reps":  15  
+        "reps":  24
     },
     {
-        "id": 0,
-        "level": "Advance"
+        "id": 2,
+        "level": "advanced",
+        "reps": 36
     }
 
 ]
