@@ -1,40 +1,24 @@
 package com.example.werkout.Class;
 
-public class Difficulty {
-    private Id _id;
+import org.bson.types.ObjectId;
+
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
+public class Difficulty extends RealmObject {
+    @PrimaryKey
+    ObjectId _id = new ObjectId();
+    String _partition = "Difficulty";
     private int id;
     private String level;
     private int reps;
 
-    public Id get_id() {
-        return _id;
-    }
-
-    public void set_id(Id _id) {
-        this._id = _id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
+    public Difficulty(int id, String level, int reps) {
         this.id = id;
-    }
-
-    public String getLevel() {
-        return level;
-    }
-
-    public void setLevel(String level) {
         this.level = level;
-    }
-
-    public int getReps() {
-        return reps;
-    }
-
-    public void setReps(int reps) {
         this.reps = reps;
     }
+
+    public Difficulty() {}
+
 }

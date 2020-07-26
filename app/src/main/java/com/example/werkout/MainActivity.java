@@ -1,6 +1,7 @@
 package com.example.werkout;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,10 +11,63 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import io.realm.Realm;
+import io.realm.mongodb.App;
+import io.realm.mongodb.AppConfiguration;
+import io.realm.mongodb.Credentials;
+import io.realm.mongodb.User;
+import io.realm.mongodb.sync.SyncConfiguration;
+
 public class MainActivity extends AppCompatActivity {
+    static User user;
+    static Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Realm.init(this); // context, usually an Activity or Application
+        String appID = "werkout-qkpbh"; // replace this with your App ID
+        App app = new App(new AppConfiguration.Builder(appID)
+                .build());
+
+
+        Credentials credentials = Credentials.anonymous();
+
+        app.loginAsync(credentials, it -> {
+            if (it.isSuccess()) {
+                Log.v("QUICKSTART", "Successfully authenticated anonymously.");
+
+                user = app.currentUser();
+
+                String partitionValue = "myPartition";
+                SyncConfiguration config = new SyncConfiguration.Builder(user, partitionValue)
+                        .waitForInitialRemoteData()
+                        .build();
+
+                // Sync all realm changes via a new instance, and when that instance has been successfully created connect it to an on-screen list (a recycler view)
+                Realm.getInstanceAsync(config, new Realm.Callback() {
+                    @Override
+                    @ParametersAreNonnullByDefault
+                    public void onSuccess(Realm _realm) {
+                        // since this realm should live exactly as long as this activity, assign the realm to a member variable
+                        realm = _realm;
+                        Log.v("QUICKSTART", "Successfully instantiated realm!");
+                    }
+                });
+
+                user.logOutAsync(result -> {
+                    if (result.isSuccess()) {
+                        Log.v("QUICKSTART", "Successfully logged out.");
+                    } else {
+                        Log.e("QUICKSTART", result.getError().toString());
+                    }
+                });
+            } else {
+                Log.e("QUICKSTART", it.getError().toString());
+            }
+        });
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -25,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+
+
     }
 
     @Override

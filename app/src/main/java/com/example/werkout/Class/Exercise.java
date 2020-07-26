@@ -1,7 +1,15 @@
 package com.example.werkout.Class;
 
-public class Exercise {
-    private Id _id;
+import org.bson.types.ObjectId;
+
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
+public class Exercise extends RealmObject {
+    @PrimaryKey
+    ObjectId _id = new ObjectId();
+    String _partition = "Exercise";
     private int id;
     private String license_author;
     private String status;
@@ -12,119 +20,27 @@ public class Exercise {
     private String uuid;
     private int license;
     private int category;
-    private String[] muscles;
-    private String[] muscles_secondary;
-    private String[] equipment;
+    private RealmList<String> muscles;
+    private RealmList<String> muscles_secondary;
+    private RealmList<String> equipment;
 
-    public Id get_id() {
-        return _id;
-    }
-
-    public void set_id(Id _id) {
-        this._id = _id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
+    public Exercise(int id, String license_author, String status, String description, String name, String name_original, String creation_date, String uuid, int license, int category, RealmList<String> muscles, RealmList<String> muscles_secondary, RealmList<String> equipment) {
         this.id = id;
-    }
-
-    public String getLicense_author() {
-        return license_author;
-    }
-
-    public void setLicense_author(String license_author) {
         this.license_author = license_author;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
-    }
-
-    public String getName_original() {
-        return name_original;
-    }
-
-    public void setName_original(String name_original) {
         this.name_original = name_original;
-    }
-
-    public String getCreation_date() {
-        return creation_date;
-    }
-
-    public void setCreation_date(String creation_date) {
         this.creation_date = creation_date;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public int getLicense() {
-        return license;
-    }
-
-    public void setLicense(int license) {
         this.license = license;
-    }
-
-    public int getCategory() {
-        return category;
-    }
-
-    public void setCategory(int category) {
         this.category = category;
-    }
-
-    public String[] getMuscles() {
-        return muscles;
-    }
-
-    public void setMuscles(String[] muscles) {
         this.muscles = muscles;
-    }
-
-    public String[] getMuscles_secondary() {
-        return muscles_secondary;
-    }
-
-    public void setMuscles_secondary(String[] muscles_secondary) {
         this.muscles_secondary = muscles_secondary;
-    }
-
-    public String[] getEquipment() {
-        return equipment;
-    }
-
-    public void setEquipment(String[] equipment) {
         this.equipment = equipment;
     }
+
+    public Exercise() {}
+
+
 }

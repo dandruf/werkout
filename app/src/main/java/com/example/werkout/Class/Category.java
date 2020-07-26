@@ -1,31 +1,24 @@
 package com.example.werkout.Class;
 
-public class Category {
-    private Id _id;
+
+
+import org.bson.types.ObjectId;
+
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
+public class Category extends RealmObject {
+    @PrimaryKey
+    ObjectId _id = new ObjectId();
+    String _partition = "Category";
     private int id;
     private String name;
 
-    public Id get_id() {
-        return _id;
-    }
-
-    public void set_id(Id _id) {
-        this._id = _id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
+    public Category(int id, String name) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
+    }
+
+    public Category() {
     }
 }
