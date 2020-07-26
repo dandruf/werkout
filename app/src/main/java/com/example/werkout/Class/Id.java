@@ -1,5 +1,7 @@
 package com.example.werkout.Class;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Id {
     @SerializedName("$oid")
     private String oid;
